@@ -1,0 +1,17 @@
+version: '3'
+services:
+
+  db:
+    image: postgres:10.1-alpine
+    networks:
+      - default
+    environment:
+#      POSTGRES_USER: "root"
+#      POSTGRES_PASSWORD: "admin_pass"
+#      POSTGRES_DB: "pg_test_db"
+      POSTGRES_PORT: "5432"
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./docker/postrges_volume:/var/lib/postgresql/data
+      - .:/home

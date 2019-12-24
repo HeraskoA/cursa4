@@ -2,18 +2,23 @@ import os
 import random
 import string
 
-import auger
+import os
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, FormView
 from django.conf import settings
+from django.views.generic.base import View
 
 from git import Repo as GitRepo
 
-from .forms import AddRepoForm
+from .forms import AddRepoForm, NeuralForm
 from .models import Repo
+from .neyronka import CustomLinearRegression
+
+neyronka = CustomLinearRegression()
+neyronka.train()
 
 
 def signup(request):
@@ -37,7 +42,7 @@ class MainView(CreateView, ListView):
     form_class = AddRepoForm
 
     def get_queryset(self):
-        return Repo.objects.filter(user=self.request.user)
+        return Repo.objects.filter(user=self.request.user, is_test=False)
 
     def form_valid(self, form):
         repo = form.save(commit=False)
@@ -53,26 +58,46 @@ class MainView(CreateView, ListView):
         return redirect(self.success_url)
 
 
-def main():
-    v = MainView()
-
-
 class RepoView(DetailView):
     model = Repo
     template_name = 'repo.html'
     success_url = reverse_lazy('main')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        path = f'./docs/repos/{self.get_object().relative_dir}/'
+        files = []
+        for r, d, f in os.walk(path):
+            for file in f:
+                if '.html' in file:
+                    files.append(os.path.join(r, file).replace(f"./docs/repos/", ""))
+        context["files"] = files
+        return context
 
     def get(self, request, *args, **kwargs):
         if 'remove' in request.GET.keys():
             self.get_object().delete()
             return redirect(self.success_url)
         elif 'generate' in request.GET.keys():
-            # with auger.magic([MainView]):
-            #     main()
-            pass
+            os.system(f"pycco repos/{self.get_object().relative_dir}/**/*.py -p")
+            #pass
         elif 'update' in request.GET.keys():
             repo = GitRepo(os.path.join(settings.REPOS_DIR, self.get_object().relative_dir))
             o = repo.remotes.origin
             o.pull()
 
         return super().get(request, *args, **kwargs)
+
+
+def neural(request):
+    if request.method == 'POST':
+        form = NeuralForm(request.POST)
+        if form.is_valid():
+            year = form.cleaned_data.get('year')
+            repo_count = neyronka.predict(year)
+            form = NeuralForm(initial={"year": year, "repo_count": repo_count})
+            return render(request, 'neural.html', {'form': form})
+    else:
+        form = NeuralForm()
+    return render(request, 'neural.html', {'form': form})
+

@@ -7,7 +7,8 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('', login_required(views.MainView.as_view()), name='main'),
-    path('signin/', auth_views.LoginView.as_view(), name='login'),
+    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('repo/<int:pk>/', login_required(views.RepoView.as_view()), name='repo'),
+    path('neural', views.neural, name='neural'),
 ]

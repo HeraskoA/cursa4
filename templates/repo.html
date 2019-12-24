@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,10 +56,7 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Projects</a></li>
-        <li><a href="#">Contact</a></li>
+        <li class="active"><a href="/">Home</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
@@ -75,7 +73,11 @@
       <h1>{{ object.deep_link }}</h1>
       <hr>
       <h3>Out data</h3>
-      <a href="?generate=true" class="btn btn-info">Download .py</a>
+      {% for i in files %}
+      <p>
+        <a href="{% static i %}" >{{i}}</a>
+      </p>
+      {% endfor %}
     </div>
     <div class="col-sm-2 sidenav">
       <div class="well">
@@ -84,6 +86,11 @@
       <div class="well">
         <a href="?remove=true" class="btn btn-danger">Remove repo</a>
       </div>
+      <div class="well">
+        <a href="?generate=true" class="btn btn-danger">Generate docs</a>
+      </div>
+            </div>
+
     </div>
   </div>
 </div>

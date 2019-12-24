@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from core.models import User, Repo, Doc, Note
+
+admin.site.register(User)
+admin.site.register(Repo)
+admin.site.register(Doc)
+admin.site.register(Note)
